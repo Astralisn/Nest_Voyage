@@ -11,12 +11,24 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
         name: user.name,
         email: user.email,
+        avatar: null, 
     });
 
     const submit = (e) => {
         e.preventDefault();
+        
+        const formData = new FormData();
+        formData.append('name', data.name);
+        formData.append('email', data.email);
+        if (data.avatar) {
+            formData.append('avatar', data.avatar);
+        }
 
-        patch(route('profile.update'));
+        patch(route('profile.update'), { data: formData });
+    };
+
+    const handleAvatarChange = (e) => {
+        setData('avatar', e.target.files[0]);
     };
 
     return (
@@ -29,13 +41,35 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                 </p>
             </header>
 
-            <form onSubmit={submit} className="mt-6 space-y-6">
+            <form onSubmit={submit} className="mt-6 space-y-6" encType="multipart/form-data">
+                <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0">
+                        <img
+                            src={user.avatar_url || '/path/to/placeholder.png'} 
+                            alt="Avatar"
+                            className="object-cover w-16 h-16 rounded-full"
+                        />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="avatar" value="" />
+                        <input
+                            type="file"
+                            id="avatar"
+                            name="avatar"
+                            onChange={handleAvatarChange}
+                            className="block w-full mt-1"
+                            accept="image/*" 
+                        />
+                        <InputError className="mt-2" message={errors.avatar} />
+                    </div>
+                </div>
+
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
 
                     <TextInput
                         id="name"
-                        className="mt-1 block w-full"
+                        className="block w-full mt-1"
                         value={data.name}
                         onChange={(e) => setData('name', e.target.value)}
                         required
@@ -52,7 +86,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                     <TextInput
                         id="email"
                         type="email"
-                        className="mt-1 block w-full"
+                        className="block w-full mt-1"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
                         required
@@ -64,20 +98,20 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
 
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>
-                        <p className="text-sm mt-2 text-gray-800 dark:text-gray-200">
+                        <p className="mt-2 text-sm text-gray-800 dark:text-gray-200">
                             Your email address is unverified.
                             <Link
                                 href={route('verification.send')}
                                 method="post"
                                 as="button"
-                                className="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
+                                className="text-sm text-gray-600 underline rounded-md dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
                             >
                                 Click here to re-send the verification email.
                             </Link>
                         </p>
 
                         {status === 'verification-link-sent' && (
-                            <div className="mt-2 font-medium text-sm text-green-600 dark:text-green-400">
+                            <div className="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
                                 A new verification link has been sent to your email address.
                             </div>
                         )}

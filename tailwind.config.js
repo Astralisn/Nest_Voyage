@@ -10,6 +10,8 @@ export default {
         './resources/js/**/*.jsx',
     ],
 
+    darkMode: 'class', 
+
     theme: {
         extend: {
             fontFamily: {
@@ -20,3 +22,4 @@ export default {
 
     plugins: [forms],
 };
+
